@@ -3,8 +3,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-from keras.datasets import mnist #import the class contianing the data set
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress INFO and WARNING logs
 
+# Now it is safe to import
+from keras.datasets import mnist
 
 # (train_X, train_y), (test_X, test_y) = mnist.load_data() #load dataset from keras database
 
@@ -121,3 +123,4 @@ def test(params, X_test, y_test):
     print(f"final accuracy on test set: {get_accuracy(y_hat, y_test)}")
 
 test((W1, b1, W2, b2 ), X_test, y_test)
+
