@@ -17,7 +17,7 @@ def ReLU_deriv(Z):
 
 def one_hot(Y):
     Y = Y.astype(int)  # Ensure Y is of integer type
-    one_hot_Y = np.zeros((Y.size, 10))
+    one_hot_Y = np.zeros((Y.size, 10), dtype=np.float32)
     one_hot_Y[np.arange(Y.size), Y] = 1
     one_hot_Y = one_hot_Y.T
     return one_hot_Y
@@ -28,8 +28,8 @@ class NeuralNetwork:
     def _init_params(self, layer_sizes):
         return [
             (
-                np.random.rand(layer_sizes[i + 1], layer_sizes[i]) - 0.5,
-                np.random.rand(layer_sizes[i + 1], 1) - 0.5,
+                np.random.rand(layer_sizes[i + 1], layer_sizes[i]).astype(np.float32) - np.float32(0.5),
+                np.random.rand(layer_sizes[i + 1], 1).astype(np.float32) - np.float32(0.5),
             )
             for i in range(len(layer_sizes) - 1)
         ]
@@ -44,7 +44,8 @@ class NeuralNetwork:
 
     def forward_prop(self, X):
         """return output layer activations and store all node states for backpropagation"""
-        Node_states = [(np.array([]), X)]
+        X = np.asarray(X, dtype=np.float32)
+        Node_states = [(np.array([], dtype=np.float32), X)]
         for i in range(0, len(self.params)):
             W, b = self.params[i]
             Z = W.dot(Node_states[-1][1]) + b
@@ -76,6 +77,7 @@ class NeuralNetwork:
     
     def fit(self, X, y, epochs=10, batch_size=64, X_val=None, y_val=None):
         """Trains the neural network using mini-batch gradient descent."""
+        X = np.asarray(X, dtype=np.float32)
         m = X.shape[1]
         for epoch in range(epochs):
             permutation = np.random.permutation(m)
@@ -169,8 +171,10 @@ class NeuralNetwork:
         layer_sizes = data["layer_sizes"].tolist()
         net = cls(layer_sizes, learning_rate=float(data["learning_rate"]))
         net.params = [
-            (data[f"W{i}"], data[f"b{i}"])
+            (
+                data[f"W{i}"].astype(np.float32),
+                data[f"b{i}"].astype(np.float32),
+            )
             for i in range(len(layer_sizes) - 1)
         ]
         return net
-
