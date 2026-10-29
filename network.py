@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 #static functions:
@@ -37,6 +38,7 @@ class NeuralNetwork:
         self.layer_sizes = layer_sizes
         self.learning_rate = learning_rate
         self.params = self._init_params(layer_sizes)
+        self.history = {}
 
     #training:
 
@@ -71,16 +73,6 @@ class NeuralNetwork:
             W, b = self.params[i]
             dW, db = self.grads[i]
             self.params[i] = (W - self.learning_rate * dW, b - self.learning_rate * db) 
-
-    def predict(self, X):
-        """Predicts the classes for the given input data."""
-        predictions = self.forward_prop(X)
-        return np.argmax(predictions, axis=0)
-    
-    def accuracy(self, X, y):
-        """Computes the accuracy of the model on the given dataset."""
-        predicted_classes = self.predict(X)
-        return 100* (np.sum(predicted_classes == y) / y.size)
     
     def fit(self, X, y, epochs=10, batch_size=64, X_val=None, y_val=None):
         """Trains the neural network using mini-batch gradient descent."""
@@ -96,14 +88,25 @@ class NeuralNetwork:
                 self.backward_prop(X_batch, y_batch)
                 self.update()
             if X_val is not None and y_val is not None:
-                val_accuracy = self.accuracy(X_val, y_val)
-                print(f"Epoch {epoch + 1}/{epochs}, Validation Accuracy: {val_accuracy:.2f}%")
+                loss, accuracy = self.evaluate(X_val, y_val)
+                self.history[epoch + 1] = (loss, accuracy)
+                print(f"Epoch {epoch + 1}/{epochs} loss = {loss:.4f}, accuracy = {accuracy:.2f}%")
 
 
     def predict_proba(self, X):
         """returns the relative propbability of X"""
         predictions = self.forward_prop(X)
         return np.max(predictions, axis=0)
+
+    def predict(self, X):
+        """Predicts the classes for the given input data."""
+        predictions = self.forward_prop(X)
+        return np.argmax(predictions, axis=0)
+    
+    def accuracy(self, X, y):
+        """Computes the accuracy of the model on the given dataset."""
+        predicted_classes = self.predict(X)
+        return 100* (np.sum(predicted_classes == y) / y.size)
 
     def evaluate(self, X, y):
         """Returns (cross-entropy loss, accuracy in %) on the given dataset."""
@@ -113,6 +116,38 @@ class NeuralNetwork:
         loss = -np.mean(np.log(A[y, np.arange(n)] + 1e-12))
         accuracy = 100 * np.mean(np.argmax(A, axis=0) == y)
         return loss, accuracy
+
+    def plot_learn(self, plot_loss=True, plot_accuracy=True):
+        """Plots the loss and accuracy over epochs if validation data was provided during training."""
+        if not self.history:
+            print("No training history available. Please train the model with validation data to plot learning curves.")
+            return
+        
+
+        
+        epochs = list(self.history.keys())
+        losses = [self.history[epoch][0] for epoch in epochs]
+        accuracies = [self.history[epoch][1] for epoch in epochs]
+        
+        fig, ax1 = plt.subplots()
+
+        if plot_loss:
+            color = 'tab:red'
+            ax1.set_xlabel('Epochs')
+            ax1.set_ylabel('Loss', color=color)
+            ax1.plot(epochs, losses, color=color)
+            ax1.tick_params(axis='y', labelcolor=color)
+
+        if plot_accuracy:
+            ax2 = ax1.twinx()
+            color = 'tab:blue'
+            ax2.set_ylabel('Accuracy (%)', color=color)
+            ax2.plot(epochs, accuracies, color=color)
+        ax2.tick_params(axis='y', labelcolor=color)
+
+        fig.tight_layout()
+        plt.title('Test Loss and Accuracy over Epochs')
+        plt.show()
 
     def save(self, path):
         """Saves the architecture, learning rate and parameters to a .npz file."""
