@@ -1,6 +1,5 @@
-numpy
+-r app-requirements.txt
 pandas
-matplotlib
 keras
 tensorflow
 threadpoolctl

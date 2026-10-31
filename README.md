@@ -118,6 +118,39 @@ $$
 
 One **epoch** consists of shuffling the training set, partitioning it into $\lceil N / B \rceil$ mini-batches (where $N$ is the number of training samples), and applying the update above once per mini-batch. Training repeats this for a fixed number of epochs.
 
+## Live Camera Digit Recognition
+
+Run the included desktop app to recognize a single handwritten digit from a
+connected camera or an image file. It uses the saved
+`Saved_paramaters/784_128_64_10.npz` model; train and save that model first if
+the file is not present.
+
+Install the requirements and launch the app from the project directory
+(Windows PowerShell):
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe camera_app.py
+```
+
+On Windows, you can instead double-click **Start Camera App.bat** in File
+Explorer. The first launch creates a local Python environment and installs the
+app's dependencies; this requires Python 3 and an internet connection. Later
+launches start the app directly. To share the app, download or clone the full
+repository and double-click the batch file; keep the `Saved_paramaters` folder
+with the launcher.
+
+Select the camera index if your external camera is not the default camera.
+Center one or more separated, dark digits on plain white paper inside the
+green preview guide. Choose **Capture / predict** for a single or multiple
+digit prediction, or enable **Live prediction** to update while the camera is
+running. Enable **Multiple digits** to segment and classify a row of digits
+from left to right; results are grouped in threes (for example, `3242` displays
+as `3,242`). **Open image...** can be used to classify a saved photo instead.
+The app converts each digit to the network's 28-by-28 MNIST input format.
+Segmentation works best with clear gaps between digits; touching digits,
+clutter, shadows, or handwriting unlike MNIST may still be misclassified.
+
 ### Prediction and Evaluation
 
 The predicted class for an input $\mathbf{x}$ is the class with the highest probability:
